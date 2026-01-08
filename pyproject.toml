@@ -6,9 +6,9 @@ requires = [
 build-backend = "hatchling.build"
 
 [project]
-name = "pycli-template"
-description = "A command-line tool"
-keywords = ["cli"]
+name = "tize"
+description = "Templatize a project"
+keywords = []
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python"
@@ -32,32 +32,33 @@ dynamic = [
 [project.urls]
 Homepage = "https://example.com"
 Documentation = "https://example.com/docs"
-Repository = "https://github.com/DevOpsJeremy/pycli-template"
-Issues = "https://github.com/DevOpsJeremy/pycli-template/issues"
-Changelog = "https://github.com/DevOpsJeremy/pycli-template/blob/main/CHANGELOG.md"
+Repository = "https://github.com/DevOpsJeremy/tize"
+Issues = "https://github.com/DevOpsJeremy/tize/issues"
+Changelog = "https://github.com/DevOpsJeremy/tize/blob/main/CHANGELOG.md"
 
 [project.scripts]
-pycli-template = "pycli_template.cli:pycli_template"
+tize = "tize.cli:tize"
 
 [tool.hatch.version]
-path = "src/pycli_template/__init__.py"
+path = "src/tize/__init__.py"
 
 [tool.hatch.build]
 sources = ["src"]
 
 [tool.hatch.build.targets.wheel]
-include = ["pycli_template"]
+include = ["tize"]
 
 [tool.hatch.build.targets.sdist]
-include = ["pycli_template", "/requirements.txt"]
+include = ["tize", "/requirements.txt"]
 
 [tool.hatch.metadata.hooks.requirements_txt]
 filename = "requirements.txt"
 
 [tool.pytest]
 strict = true
-addopts = ["--junit-xml", "pytest.junit.xml", "--github-report"]
-junit_suite_name = "pycli-template"
+# TODO: Remove --capture=no
+addopts = ["--tb=line", "-rN", "-W", "ignore", "--junit-xml", "pytest.junit.xml", "--github-report", "--capture=no"]
+junit_suite_name = "tize"
 
 [tool.ruff]
 output-format = "github"

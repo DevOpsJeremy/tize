@@ -1,1 +1,1 @@
-# pycli-template
+# tize
