@@ -1,9 +1,7 @@
 import click
 
 
-@click.group(
-    name="tize", context_settings=dict(auto_envvar_prefix="TIZE")
-)
+@click.group(name="tize", context_settings=dict(auto_envvar_prefix="TIZE"))
 def tize():
     pass
 
