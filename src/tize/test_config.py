@@ -1,7 +1,6 @@
 import pytest
 import textwrap
 from tize import config
-from pathlib import Path
 import os
 
 VALID_CONFIG = {"tags": ["tag1", "tag2"]}
