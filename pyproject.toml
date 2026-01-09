@@ -36,8 +36,8 @@ Repository = "https://github.com/DevOpsJeremy/tize"
 Issues = "https://github.com/DevOpsJeremy/tize/issues"
 Changelog = "https://github.com/DevOpsJeremy/tize/blob/main/CHANGELOG.md"
 
-[project.scripts]
-tize = "tize.cli:tize"
+# [project.scripts]
+# tize = "tize.cli:tize"
 
 [tool.hatch.version]
 path = "src/tize/__init__.py"
@@ -59,6 +59,12 @@ strict = true
 # TODO: Remove --capture=no
 addopts = ["--tb=line", "-rN", "-W", "ignore", "--junit-xml", "pytest.junit.xml", "--github-report", "--capture=no"]
 junit_suite_name = "tize"
+
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "serial",
+]
+
 
 [tool.ruff]
 output-format = "github"

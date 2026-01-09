@@ -1,11 +1,22 @@
+from pathlib import Path
+import re
+import json
+from tize import utils
+import textwrap
+import yaml
+
 def get_file_config(path: Path) -> dict:
+    default_config_path = utils.get_file("config.defaults.json")
+    with open(default_config_path, 'r') as f:
+        default_config = json.load(f)
+
     if not path.is_file():
         raise Exception(f"Invalid path: {path}. NOT a file.")
     
     config = default_config.copy()
-    comment_regex = r"^(\#-{3,}scaffolding\n(?P<scaffold_config>(\#.*\n)*)\#-{3,}\n?)?(?P<content>(.*\n?)*)"
+    comment_regex = r"^(\#-{3,}tize\n(?P<scaffold_config>(\#.*\n)*)\#-{3,}\n?)?(?P<content>(.*\n?)*)"
     if path.suffix in [".md", ".markdown", ".html"]:
-        comment_regex = r"^(<!\-\-( *\n)*-{3,}scaffolding\n(?P<scaffold_config>(.*\n)*)-{3,}\n?(.*\n)*\-\->)?(?P<content>(.*\n?)*)"
+        comment_regex = r"^(<!\-\-( *\n)*-{3,}tize\n(?P<scaffold_config>(.*\n)*)-{3,}\n?(.*\n)*\-\->)?(?P<content>(.*\n?)*)"
     pattern = re.compile(
         comment_regex,
         re.MULTILINE
@@ -28,16 +39,8 @@ def get_file_config(path: Path) -> dict:
     try:
         file_config = yaml.safe_load(config_text_cleaned)
         print(f"Config loaded:\n{file_config}")
-        merge_dicts(config, file_config)
+        utils.merge_dicts(config, file_config)
         print(f"Config merged:\n{config}")
     except Exception as e:
         raise e
     return config
-
-def merge_dicts(a: dict, b: dict):
-    for key in b:
-        if key in a and isinstance(a[key], dict) and isinstance(b[key], dict):
-            merge_dicts(a[key], b[key])
-        else:
-            a[key] = b[key]
-    return a
