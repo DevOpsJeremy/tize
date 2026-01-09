@@ -2,9 +2,7 @@
 import sys
 from pathlib import Path
 
-dest = Path(
-    sys.argv[1] if len(sys.argv) > 1 else "."
-).resolve()
+dest = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
 print(dest)
 exit()
 import yaml
@@ -14,19 +12,17 @@ from os import listdir
 from pathlib import Path
 import json
 
-#region functions
+
+# region functions
 def get_file_config(path: Path) -> dict:
     if not path.is_file():
         raise Exception(f"Invalid path: {path}. NOT a file.")
-    
+
     config = default_config.copy()
     comment_regex = r"^(\#-{3,}scaffolding\n(?P<scaffold_config>(\#.*\n)*)\#-{3,}\n?)?(?P<content>(.*\n?)*)"
     if path.suffix in [".md", ".markdown", ".html"]:
         comment_regex = r"^(<!\-\-( *\n)*-{3,}scaffolding\n(?P<scaffold_config>(.*\n)*)-{3,}\n?(.*\n)*\-\->)?(?P<content>(.*\n?)*)"
-    pattern = re.compile(
-        comment_regex,
-        re.MULTILINE
-    )
+    pattern = re.compile(comment_regex, re.MULTILINE)
     file_content = path.read_text()
     matches = pattern.search(file_content)
     print(f"Getting file config for: {path}")
@@ -51,6 +47,7 @@ def get_file_config(path: Path) -> dict:
         raise e
     return config
 
+
 def merge_dicts(a: dict, b: dict):
     for key in b:
         if key in a and isinstance(a[key], dict) and isinstance(b[key], dict):
@@ -59,7 +56,10 @@ def merge_dicts(a: dict, b: dict):
             a[key] = b[key]
     return a
 
-def should_process(enable_tags: list[str], item_tags: list[str], path: Path | None = None) -> bool:
+
+def should_process(
+    enable_tags: list[str], item_tags: list[str], path: Path | None = None
+) -> bool:
     print(f"Running SHOULD_PROCESS")
     print(f"Enable tags: {enable_tags}")
     print(f"Item tags: {item_tags}")
@@ -71,7 +71,7 @@ def should_process(enable_tags: list[str], item_tags: list[str], path: Path | No
     if "all" in enable_tags or "all" in item_tags:
         print(f"processing: {path.name}")
         return True
-    
+
     comparison = set(enable_tags) & set(item_tags)
     if len(comparison) > 0:
         print(f"processing: {path.name}")
@@ -79,6 +79,7 @@ def should_process(enable_tags: list[str], item_tags: list[str], path: Path | No
 
     print(f"NOT processing: {path.name}")
     return False
+
 
 def assemble_files(dir: Path, tags: list = []):
     children = []
@@ -94,7 +95,7 @@ def assemble_files(dir: Path, tags: list = []):
             print(f"Config exists: {config_path.exists()}")
             config_full = default_config.copy()
             if config_path.exists():
-                with open(config_path, 'r') as f:
+                with open(config_path, "r") as f:
                     config = json.load(f)
                 print(config)
                 print("Merging dicts")
@@ -114,26 +115,33 @@ def assemble_files(dir: Path, tags: list = []):
                 print(f"PROCESS File: {path.name}")
                 children.append(path)
     return children
-#endregion functions
 
-#region Classes
-class Scaffold: 
+
+# endregion functions
+
+
+# region Classes
+class Scaffold:
     def __init__(self):
         pass
 
-class ScaffoldItem: 
+
+class ScaffoldItem:
     def __init__(self):
         pass
+
 
 class ScaffoldConfig:
     def __init__(self):
         pass
-#endregion Classes
+
+
+# endregion Classes
 
 scaffold_config_file = ".scaffolding.json"
 dir = Path("src/clinit/scaffolding/scaffolds/python")
 default_config_path = Path("src/clinit/scaffolding/configs/scaffold.defaults.json")
-with open(default_config_path, 'r') as f:
+with open(default_config_path, "r") as f:
     default_config = json.load(f)
 print(f"defualt config: {default_config}")
 tags = ["defaults"]
