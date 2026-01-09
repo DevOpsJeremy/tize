@@ -25,11 +25,13 @@ class File(Base):
         if not path.is_file():
             raise Exception(f"Invalid path: {path}. Not a file.")
         self.path = path
-        self.parser = Parser(self.path)
+        parser_cls = ParserFactory.get_parser(self.path)
+        self.parser = parser_cls(self.path)
+        self.config = self.get_config()
 
     def get_config(self):
         defaults = self.get_default()
-        return utils.merge_dicts(defaults.copy(), {})
+        return utils.merge_dicts(defaults.copy(), self.parser.config)
 
 
 class Parser:
@@ -159,7 +161,6 @@ class ParserFactory:
 
 
 def get_file_config(path: Path) -> dict:
-    default_config = Base.get_default()
     file = File(path)
 
     config = file.config
