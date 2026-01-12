@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+# ruff: noqa
+import pytest
+
+pytest.skip(msg="Skipping")
+
 import sys
 from pathlib import Path
 

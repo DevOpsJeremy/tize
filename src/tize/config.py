@@ -1,37 +1,96 @@
-from pathlib import Path
-import re
 import json
-from tize import utils
+import jsonschema
+import re
 import textwrap
 import yaml
+from pathlib import Path
+from tize import utils
 
 
 class Base:
-    _default = None
+    DEFAULTS = {"tags": ["all"]}
+    SCHEMA = {"properties": {"tags": {"type": "array"}}}
 
-    def __init__(self):
-        pass
+    def __init__(self, defaults: dict = None, schema: dict = None):
+        if defaults:
+            self.DEFAULTS = defaults
+
+        if schema:
+            self.SCHEMA = schema
 
     @classmethod
-    def get_default(cls):
-        if cls._default is None:
-            with open(utils.get_file("config.defaults.json"), "r") as f:
-                cls._default = json.load(f)
-        return cls._default
+    def merge_config(cls, config: dict):
+        return utils.merge_dicts(cls.DEFAULTS.copy(), config)
+
+    def validate_config(self):
+        jsonschema.validate(self.config, self.SCHEMA)
 
 
 class File(Base):
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, defaults: dict = None, schema: dict = None):
+        super().__init__(defaults=defaults, schema=schema)
+
         if not path.is_file():
             raise Exception(f"Invalid path: {path}. Not a file.")
         self.path = path
         parser_cls = ParserFactory.get_parser(self.path)
         self.parser = parser_cls(self.path)
-        self.config = self.get_config()
+        self.config = self.merge_config(self.parser.config)
+        self.validate_config()
 
-    def get_config(self):
-        defaults = self.get_default()
-        return utils.merge_dicts(defaults.copy(), self.parser.config)
+
+class Directory(Base):
+    CONFIG_FILE_BASE = "tize"
+    CONFIG_FILE_EXTS = (
+        ".json",
+        ".jsonc",
+        ".yaml",
+        ".yml",
+    )
+    CONFIG_FILE_REGEX = r"\." + CONFIG_FILE_BASE + r"\.(jsonc?|ya?ml)"
+
+    def __init__(self, path: Path, defaults: dict = None, schema: dict = None):
+        super().__init__(defaults=defaults, schema=schema)
+
+        if not path.is_dir():
+            raise Exception(f"Invalid path: {path}. Not a directory.")
+        self.path = path
+        self.configuration_file = self.get_config_file()
+        base_config = {}
+        if self.configuration_file:
+            with open(self.configuration_file, "r") as f:
+                base_config = json.load(f)
+        self.config = self.merge_config(base_config)
+        self.validate_config()
+
+    def get_config_file(self):
+        configuration_file = None
+
+        for ext in self.CONFIG_FILE_EXTS:
+            filepath = self.path / self.assemble_config_filename(ext)
+            if filepath.exists():
+                configuration_file = filepath
+                break
+
+        return configuration_file
+
+    @classmethod
+    def assemble_config_filename(cls, extension: str = CONFIG_FILE_EXTS[0]):
+        ext = extension
+        if not extension.startswith("."):
+            ext = "." + extension
+        return f".{cls.CONFIG_FILE_BASE}{ext}"
+
+
+class ConfigFactory:
+    def get_config_class(path: Path):
+        if not path.exists():
+            raise Exception(f"Invalid path: {path}. Path does not exist.")
+
+        if path.is_dir():
+            return Directory
+        elif path.is_file():
+            return File
 
 
 class Parser:
@@ -158,28 +217,3 @@ class ParserFactory:
         prefix = Parser.get_prefix(path)
 
         return ParserFactory.PARSERS.get(prefix, ParserFactory.DEFAULT_PARSER)
-
-
-def get_file_config(path: Path) -> dict:
-    file = File(path)
-
-    config = file.config
-    comment_regex = r"^(\#-{3,}tize\n(?P<scaffold_config>(\#.*\n)*)\#-{3,}\n?)?(?P<content>(.*\n?)*)"
-    if path.suffix in [".md", ".markdown", ".html"]:
-        comment_regex = r"^(<!\-\-( *\n)*-{3,}tize\n(?P<scaffold_config>(.*\n)*)-{3,}\n?(.*\n)*\-\->)?(?P<content>(.*\n?)*)"
-    pattern = re.compile(comment_regex, re.MULTILINE)
-    file_content = path.read_text()
-    matches = pattern.search(file_content)
-    config_text_raw = matches.group("scaffold_config")
-    if not config_text_raw:
-        return config
-    config_text = config_text_raw
-    if path.suffix not in [".md", ".markdown", ".html"]:
-        config_text = re.sub(r"^\#", "", config_text_raw, flags=re.MULTILINE)
-    config_text_cleaned = textwrap.dedent(config_text).strip()
-    try:
-        file_config = yaml.safe_load(config_text_cleaned)
-        utils.merge_dicts(config, file_config)
-    except Exception as e:
-        raise e
-    return config

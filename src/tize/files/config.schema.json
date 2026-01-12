@@ -1,8 +1,0 @@
-{
-  "title": "Scaffold Configuration Schema",
-  "properties": {
-    "tags": {
-      "type": "array"
-    }
-  }
-}
