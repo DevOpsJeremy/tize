@@ -1,3 +1,6 @@
+# ---
+# {"tags":["something"]}
+# ---
 import json
 import jsonschema
 import re
@@ -118,6 +121,7 @@ class Parser:
     def update(self):
         self.prefix = self.get_prefix(self.path)
         self.content = self.path.read_text()
+        self.content = self.path.read_text()
         self.pattern = self.get_pattern()
         self.matches = self.search_content()
         self.config, self.pruned_content = self.get_config()
@@ -154,15 +158,20 @@ class Parser:
         return self.pattern.search(self.content)
 
     def clean_config(self, config_string: str):
-        return textwrap.dedent(
-            re.sub(r"^" + self.prefix, "", config_string, flags=re.MULTILINE)
-        ).strip()
+        re_pattern = r"^" + self.prefix
+        sub = re.sub(re_pattern, "", config_string, flags=re.MULTILINE)
+        dedent_strip = textwrap.dedent(sub).strip()
+        return dedent_strip
 
     def get_config(self):
         config_comment = self.matches.group(self.CONFIG_GROUP)
-        cleaned_config = self.clean_config(config_comment)
+        try:
+            cleaned_config = self.clean_config(config_comment)
+            config = yaml.safe_load(cleaned_config)
+        except:
+            config = Base.DEFAULTS
 
-        return (yaml.safe_load(cleaned_config), self.matches.group(self.CONTENT_GROUP))
+        return (config, self.matches.group(self.CONTENT_GROUP))
 
 
 class HtmlParser(Parser):
