@@ -9,17 +9,12 @@ from tize import utils
 class Tree:
     DEFAULT_TAGS = ["all"]
 
-    def __init__(self, root: Path, tags: list = DEFAULT_TAGS, env: jinja2.Environment = None):
+    def __init__(
+        self, root: Path, tags: list = DEFAULT_TAGS, env: jinja2.Environment = None
+    ):
+        self.root = root
         self.tags = tags
-        self.children = self.get_children(root)
-
-        if not env:
-            env = jinja2.Environment()
-            env.globals = dict(
-                tags=self.tags,
-                children=self.children
-            )
-        self.env = env
+        self.children = self.get_children(self.root)
 
     def get_children(self, root: Path) -> list:
         cfg = tize_config.ConfigFactory.get_config_class(root)
@@ -70,3 +65,29 @@ class Tree:
             return True
 
         return False
+
+
+class Build:
+    def __init__(
+        self,
+        # destination: Path,
+        tree: Tree = Tree(Path(os.getcwd())),
+        variables: dict = {},
+        env: jinja2.Environment = None
+    ):
+        # self.destination = destination
+        self.tree = tree
+        self.variables = {
+            'tags': self.tree.tags,
+            'children': self.tree.children
+        } | variables
+
+        if not env:
+            env = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(tree.root)
+            )
+        self.env = env
+
+    def render(self, destination: Path):
+        for c in self.tree.children:
+            print(f"c: {c}")

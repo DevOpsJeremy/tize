@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from tize import config, tree
+from tize import config, build
 
 
 def test_binary_file(tmp_path):
@@ -12,5 +12,4 @@ def test_binary_file(tmp_path):
     with open(file, "wb") as f:
         f.write(bytearray())
 
-    print(tree.Tree(Path(test_dir)))
-
+    print(build.Tree(Path(test_dir)))
