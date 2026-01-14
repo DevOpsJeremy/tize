@@ -17,7 +17,7 @@ install:
 
 pre-test:
 	$(HEADER)
-	pip install pytest pytest-github-report .
+	pip install pytest .
 
 test: pre-test
 	$(HEADER)

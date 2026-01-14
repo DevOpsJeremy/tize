@@ -57,7 +57,7 @@ filename = "requirements.txt"
 [tool.pytest]
 strict = true
 # TODO: Remove --capture=no
-addopts = ["--tb=line", "-rN", "-W", "ignore", "--junit-xml", "pytest.junit.xml", "--github-report", "--capture=no"]
+addopts = ["--tb=line", "-rN", "-W", "ignore", "--junit-xml", "pytest.junit.xml", "--capture=no"]
 junit_suite_name = "tize"
 
 markers = [

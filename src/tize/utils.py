@@ -16,3 +16,12 @@ def merge_dicts(a: dict, b: dict):
         else:
             a[key] = b[key]
     return a
+
+def is_binary_string(bytes):
+    textchars = bytearray({7,8,9,10,12,13,27} | set(range(0x20, 0x100)) - {0x7f})
+    return bool(bytes.translate(None, textchars))
+
+def is_binary(path: Path):
+    with open(path, 'rb') as file:
+        return is_binary_string(file.read(1024))
+

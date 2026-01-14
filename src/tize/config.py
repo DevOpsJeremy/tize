@@ -15,6 +15,11 @@ class Base:
     SCHEMA = {"properties": {"tags": {"type": "array"}}}
 
     def __init__(self, defaults: dict = None, schema: dict = None):
+        self.path = None
+        self.parser = None
+        self.config = None
+        self.binary = None
+
         if defaults:
             self.DEFAULTS = defaults
 
@@ -38,6 +43,11 @@ class File(Base):
         self.path = path
         parser_cls = ParserFactory.get_parser(self.path)
         self.parser = parser_cls(self.path)
+
+        self.binary = utils.is_binary(self.path)
+        if self.binary:
+            return
+
         self.config = self.merge_config(self.parser.config)
         self.validate_config()
 
@@ -88,7 +98,7 @@ class Directory(Base):
 class ConfigFactory:
     def get_config_class(path: Path):
         if not path.exists():
-            raise Exception(f"Invalid path: {path}. Path does not exist.")
+            raise FileNotFoundException(f"Invalid path: {path}. Path does not exist.")
 
         if path.is_dir():
             return Directory
@@ -115,12 +125,21 @@ class Parser:
     DEFAULT_PREFIX = "#"
 
     def __init__(self, path: Path):
+        self.prefix = None
+        self.content = None
+        self.pattern = None
+        self.matches = None
+        self.config = None
+        self.pruned_content = None
+
         self.path = path
         self.update()
 
     def update(self):
         self.prefix = self.get_prefix(self.path)
-        self.content = self.path.read_text()
+        if utils.is_binary(self.path):
+            return
+
         self.content = self.path.read_text()
         self.pattern = self.get_pattern()
         self.matches = self.search_content()
