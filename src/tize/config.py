@@ -26,6 +26,7 @@ class Base:
 
     def validate_config(self):
         import jsonschema
+
         jsonschema.validate(self.config, self.SCHEMA)
 
     def __str__(self):
@@ -101,7 +102,7 @@ class Directory(Base):
 class ConfigFactory:
     def get_config_class(path: Path):
         if not path.exists():
-            raise FileNotFoundException(f"Invalid path: {path}. Path does not exist.")
+            raise FileNotFoundError(f"Invalid path: {path}. Path does not exist.")
 
         if path.is_dir():
             return Directory
@@ -181,6 +182,7 @@ class Parser:
 
     def clean_config(self, config_string: str):
         import textwrap
+
         re_pattern = r"^" + self.prefix
         sub = re.sub(re_pattern, "", config_string, flags=re.MULTILINE)
         dedent_strip = textwrap.dedent(sub).strip()
@@ -188,11 +190,12 @@ class Parser:
 
     def get_config(self):
         import yaml
+
         config_comment = self.matches.group(self.CONFIG_GROUP)
         try:
             cleaned_config = self.clean_config(config_comment)
             config = yaml.safe_load(cleaned_config)
-        except:
+        except Exception:
             config = Base.DEFAULTS
 
         return (config, self.matches.group(self.CONTENT_GROUP))

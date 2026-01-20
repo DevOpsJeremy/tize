@@ -3,7 +3,6 @@ import os
 import re
 from pathlib import Path
 from tize import config as tize_config
-from tize import utils
 
 
 class Tree:
@@ -77,7 +76,6 @@ class Build:
     ):
         # self.destination = destination
         self.source = source
-        print(f"Setting tree: {Tree(self.source)}")
         self.tree = Tree(self.source)
         self.variables = {
             "tags": self.tree.tags,
@@ -89,24 +87,14 @@ class Build:
         self.env = env
 
     def render(self, destination: Path):
-        print(f"render destination: {destination}")
         for child in self.tree.children:
             self.render_item(child, destination)
 
     def render_item(self, item: tize_config.File, root: Path):
         relative_path = item.path.relative_to(self.source)
-        print(f"relative:    {relative_path}")
-        print(f"root:        {root}")
-        print(f"item.path:   {item.path}")
         destination = root / relative_path
-        print(f"source:      {item.path}")
-        print(f"destination: {destination}")
         template = self.env.get_template(str(relative_path))
-        print(f"template:    {template}")
-        print(f"making path: {destination.parent}")
         os.makedirs(destination.parent, exist_ok=True)
         with open(destination, "w") as f:
             destination_content = template.render(self.variables)
-            print(f"destination_content: {destination_content}")
             f.write(destination_content)
-

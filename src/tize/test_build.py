@@ -1,7 +1,7 @@
 import os
 import textwrap
 from pathlib import Path
-from tize import config, build
+from tize import build
 
 
 def test_binary_file(tmp_path):
@@ -15,15 +15,20 @@ def test_binary_file(tmp_path):
 
     build.Tree(Path(test_dir))
 
+
 def test_render(tmp_path):
     dest_dir = tmp_path / "dest_path"
-
     source_dir = tmp_path / "source_path"
-    sub_dir = source_dir / "subdir"
+
+    sub_dir_rel = "subdir"
+    sub_dir = source_dir / sub_dir_rel
     for dir in (source_dir, sub_dir):
         os.makedirs(dir, exist_ok=True)
-    file1 = source_dir / "file1.py"
-    file2 = sub_dir / "config.json"
+
+    file1_rel = "file1.py"
+    file1 = source_dir / file1_rel
+    file2_rel = f"{sub_dir_rel}/config.json"
+    file2 = source_dir / file2_rel
 
     content = """
     import os
@@ -37,19 +42,20 @@ def test_render(tmp_path):
 
     build.Build(source_dir).render(dest_dir)
 
-    dest_file1 = dest_dir / "file1.py"
-    dest_file2 = dest_dir / "subdir" / "config.json"
+    dest_file1 = dest_dir / file1_rel
+    dest_file2 = dest_dir / file2_rel
 
     with open(file1) as f:
-        file1_source_content = f.read()
+        file1_source_content = f.read().strip()
 
     with open(file2) as f:
-        file2_source_content = f.read()
+        file2_source_content = f.read().strip()
 
     with open(dest_file1) as f:
-        dest_file1_source_content = f.read()
+        file1_dest_content = f.read().strip()
 
     with open(dest_file2) as f:
-        dest_file2_source_content = f.read()
+        file2_dest_content = f.read().strip()
 
-
+    assert file1_source_content == file1_dest_content
+    assert file2_source_content == file2_dest_content
