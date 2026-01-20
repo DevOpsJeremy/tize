@@ -4,8 +4,8 @@ from pathlib import Path
 from tize import build
 
 
-def test_binary_file(tmp_path):
-    test_dir = tmp_path / "test_path"
+def test_tree_binary_file(tmp_path):
+    test_dir = tmp_path / "test_tree_binary_file"
     os.makedirs(test_dir, exist_ok=True)
     filename = "test_script.py"
     file = test_dir / filename
@@ -13,8 +13,19 @@ def test_binary_file(tmp_path):
     with open(file, "wb") as f:
         f.write(bytearray())
 
-    build.Tree(Path(test_dir))
+    build.Tree(test_dir)
 
+def test_build_binary_file(tmp_path):
+    test_dir = tmp_path / "test_build_binary_file_src"
+    test_dir_dest = tmp_path / "test_build_binary_file_dest"
+    os.makedirs(test_dir, exist_ok=True)
+    filename = "test_script.py"
+    file = test_dir / filename
+
+    with open(file, "wb") as f:
+        f.write(bytearray())
+
+    build.Build(test_dir).render(test_dir_dest)
 
 def test_render(tmp_path):
     dest_dir = tmp_path / "dest_path"

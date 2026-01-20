@@ -1,15 +1,17 @@
 import jinja2
 import os
 import re
+import shutil
 from pathlib import Path
 from tize import config as tize_config
+from tize import utils
 
 
 class Tree:
     DEFAULT_TAGS = ["all"]
 
     def __init__(
-        self, root: Path, tags: list = DEFAULT_TAGS, env: jinja2.Environment = None
+        self, root: Path, tags: list = DEFAULT_TAGS, **kwargs
     ):
         self.root = root
         self.tags = tags
@@ -73,10 +75,11 @@ class Build:
         source: Path = Path(os.getcwd()),
         variables: dict = {},
         env: jinja2.Environment = None,
+        **kwargs
     ):
         # self.destination = destination
         self.source = source
-        self.tree = Tree(self.source)
+        self.tree = Tree(self.source, **kwargs)
         self.variables = {
             "tags": self.tree.tags,
             "children": self.tree.children,
@@ -93,8 +96,14 @@ class Build:
     def render_item(self, item: tize_config.File, root: Path):
         relative_path = item.path.relative_to(self.source)
         destination = root / relative_path
-        template = self.env.get_template(str(relative_path))
         os.makedirs(destination.parent, exist_ok=True)
+
+        if utils.is_binary(relative_path):
+            shutil.copyfile(relative_path, destination)
+            return
+
+        template = self.env.get_template(str(relative_path))
+
         with open(destination, "w") as f:
             destination_content = template.render(self.variables)
             f.write(destination_content)
