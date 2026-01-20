@@ -37,3 +37,19 @@ def test_render(tmp_path):
 
     build.Build(source_dir).render(dest_dir)
 
+    dest_file1 = dest_dir / "file1.py"
+    dest_file2 = dest_dir / "subdir" / "config.json"
+
+    with open(file1) as f:
+        file1_source_content = f.read()
+
+    with open(file2) as f:
+        file2_source_content = f.read()
+
+    with open(dest_file1) as f:
+        dest_file1_source_content = f.read()
+
+    with open(dest_file2) as f:
+        dest_file2_source_content = f.read()
+
+
