@@ -1,11 +1,5 @@
-# ---
-# {"tags":["something"]}
-# ---
 import json
-import jsonschema
 import re
-import textwrap
-import yaml
 from pathlib import Path
 from tize import utils
 
@@ -31,7 +25,16 @@ class Base:
         return utils.merge_dicts(cls.DEFAULTS.copy(), config)
 
     def validate_config(self):
+        import jsonschema
         jsonschema.validate(self.config, self.SCHEMA)
+
+    def __str__(self):
+        class_name = self.__class__.__name__
+        return f"{class_name}(path={self.path})"
+
+    def __repr__(self):
+        class_name = self.__class__.__name__
+        return f"{class_name}(path={self.path!r}, config={self.config!r})"
 
 
 class File(Base):
@@ -177,12 +180,14 @@ class Parser:
         return self.pattern.search(self.content)
 
     def clean_config(self, config_string: str):
+        import textwrap
         re_pattern = r"^" + self.prefix
         sub = re.sub(re_pattern, "", config_string, flags=re.MULTILINE)
         dedent_strip = textwrap.dedent(sub).strip()
         return dedent_strip
 
     def get_config(self):
+        import yaml
         config_comment = self.matches.group(self.CONFIG_GROUP)
         try:
             cleaned_config = self.clean_config(config_comment)

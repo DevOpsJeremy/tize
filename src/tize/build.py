@@ -25,7 +25,7 @@ class Tree:
             return children
 
         if root.is_file():
-            children.append(root)
+            children.append(config_obj)
             return children
 
         children = []
@@ -71,23 +71,28 @@ class Build:
     def __init__(
         self,
         # destination: Path,
-        tree: Tree = Tree(Path(os.getcwd())),
+        source: Path = Path(os.getcwd()),
         variables: dict = {},
-        env: jinja2.Environment = None
+        env: jinja2.Environment = None,
     ):
         # self.destination = destination
-        self.tree = tree
+        self.source = source
+        print(f"Setting tree: {Tree(self.source)}")
+        self.tree = Tree(self.source)
         self.variables = {
-            'tags': self.tree.tags,
-            'children': self.tree.children
+            "tags": self.tree.tags,
+            "children": self.tree.children,
         } | variables
 
         if not env:
-            env = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(tree.root)
-            )
+            env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.tree.root))
         self.env = env
 
     def render(self, destination: Path):
-        for c in self.tree.children:
-            print(f"c: {c}")
+        for child in self.tree.children:
+            self.render_item(child, destination)
+
+    def render_item(self, item: tize_config.File, root: Path):
+        destination = root / item.path
+        print(f"destination: {destination}")
+
