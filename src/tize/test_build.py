@@ -1,6 +1,5 @@
 import os
 import textwrap
-from pathlib import Path
 from tize import build
 
 
@@ -15,6 +14,7 @@ def test_tree_binary_file(tmp_path):
 
     build.Tree(test_dir)
 
+
 def test_build_binary_file(tmp_path):
     test_dir = tmp_path / "test_build_binary_file_src"
     test_dir_dest = tmp_path / "test_build_binary_file_dest"
@@ -26,6 +26,7 @@ def test_build_binary_file(tmp_path):
         f.write(bytearray())
 
     build.Build(test_dir).render(test_dir_dest)
+
 
 def test_render(tmp_path):
     dest_dir = tmp_path / "dest_path"

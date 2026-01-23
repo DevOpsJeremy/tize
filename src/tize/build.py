@@ -10,9 +10,7 @@ from tize import utils
 class Tree:
     DEFAULT_TAGS = ["all"]
 
-    def __init__(
-        self, root: Path, tags: list = DEFAULT_TAGS, **kwargs
-    ):
+    def __init__(self, root: Path, tags: list = DEFAULT_TAGS, **kwargs):
         self.root = root
         self.tags = tags
         self.children = self.get_children(self.root)
@@ -75,7 +73,7 @@ class Build:
         source: Path = Path(os.getcwd()),
         variables: dict = {},
         env: jinja2.Environment = None,
-        **kwargs
+        **kwargs,
     ):
         # self.destination = destination
         self.source = source
@@ -98,8 +96,8 @@ class Build:
         destination = root / relative_path
         os.makedirs(destination.parent, exist_ok=True)
 
-        if utils.is_binary(relative_path):
-            shutil.copyfile(relative_path, destination)
+        if utils.is_binary(self.source / item.path):
+            shutil.copyfile(self.source / item.path, destination)
             return
 
         template = self.env.get_template(str(relative_path))
