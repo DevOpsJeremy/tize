@@ -42,15 +42,28 @@ def test_render(tmp_path):
     file2_rel = f"{sub_dir_rel}/config.json"
     file2 = source_dir / file2_rel
 
-    content = """
+    python_content = """
     import os
 
     os.getcwd()
     """
 
-    for file in (file1, file2):
-        with open(file, "w") as f:
-            f.write(textwrap.dedent(content).strip())
+    with open(file1, "w") as f:
+        f.write(textwrap.dedent(python_content).strip())
+
+    json_content = """
+    {
+      "config1": [
+        {
+          "item1": "value1",
+          "item2": "value2"
+        }
+      ]
+    }
+    """
+
+    with open(file2, "w") as f:
+        f.write(textwrap.dedent(json_content).strip())
 
     build.Build(source_dir).render(dest_dir)
 
