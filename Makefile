@@ -42,8 +42,11 @@ format: pre-format
 
 clean:
 	$(HEADER)
-	rm -rf dist
-	rm -f *junit.xml
+	find . -name '.*cache' -exec rm -rf {} +
+	find . -name dist -exec rm -rf {} +
+	find . -name '*junit.xml' -exec rm -rf {} +
+	find . -name '.bash*' -exec rm -rf {} +
+	find . -name '__pycache__' -exec rm -rf {} +
 
 all: clean install test lint
 
